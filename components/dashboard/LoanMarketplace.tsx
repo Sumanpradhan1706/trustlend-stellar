@@ -16,21 +16,20 @@ interface MarketplaceLoan {
 interface LoanMarketplaceProps {
   loans: MarketplaceLoan[];
   lenderWallet: string | null;
+  emptyStateTitle?: string;
+  emptyStateDescription?: string;
 }
 
 function TrustBadge({ score }: { score: number }) {
-  // TrustLend score range: 0-750
-  // Green  >= 200 : Good standing (default new users start at 250)
-  // Yellow >= 100 : Fair / limited history
-  // Red    < 100  : High risk / new with no history
   const color =
     score >= 200 ? "#22cf9d" :
     score >= 100 ? "#f5a623" :
     "#ff6b6b";
   const label =
-    score >= 200 ? "🟢" :
-    score >= 100 ? "🟡" :
-    "🔴";
+    score >= 200 ? "Good" :
+    score >= 100 ? "Fair" :
+    "Risk";
+
   return (
     <span
       title={`Trust score: ${score}/750`}
@@ -53,7 +52,12 @@ function TrustBadge({ score }: { score: number }) {
   );
 }
 
-export function LoanMarketplace({ loans, lenderWallet: _lenderWallet }: LoanMarketplaceProps) {
+export function LoanMarketplace({
+  loans,
+  lenderWallet: _lenderWallet,
+  emptyStateTitle = "All loans are funded!",
+  emptyStateDescription = "No open loan requests right now. Check back soon.",
+}: LoanMarketplaceProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (loans.length === 0) {
@@ -67,8 +71,8 @@ export function LoanMarketplace({ loans, lenderWallet: _lenderWallet }: LoanMark
           borderRadius: "0.75rem",
         }}
       >
-        <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>🎉 All loans are funded!</p>
-        <p style={{ fontSize: "0.85rem" }}>No open loan requests right now. Check back soon.</p>
+        <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>{emptyStateTitle}</p>
+        <p style={{ fontSize: "0.85rem" }}>{emptyStateDescription}</p>
       </div>
     );
   }
@@ -94,10 +98,8 @@ export function LoanMarketplace({ loans, lenderWallet: _lenderWallet }: LoanMark
               (loan.principal_amount * (loan.apr_bps / 10000) * loan.duration_days) / 365
             ).toFixed(2);
             const isExpanded = expandedId === loan.id;
-            const hasWallet  = Boolean(loan.borrower_wallet);
+            const hasWallet = Boolean(loan.borrower_wallet);
 
-            // Fragment with key fixes the "Each child in a list" React warning.
-            // <> shorthand cannot accept a key prop.
             return (
               <Fragment key={loan.id}>
                 <tr
@@ -113,8 +115,15 @@ export function LoanMarketplace({ loans, lenderWallet: _lenderWallet }: LoanMark
                   </td>
                   <td style={{ fontWeight: 600, color: "#111" }}>{loan.borrower_name}</td>
                   <td><TrustBadge score={loan.trust_score} /></td>
-                  <td><strong style={{ fontSize: "1rem", color: "#111" }}>{loan.principal_amount.toFixed(2)}</strong> <span style={{ fontSize: "0.75rem", opacity: 0.6, color: "#444" }}>XLM</span></td>
-                  <td style={{ fontWeight: 600, color: "#111" }}>{(loan.apr_bps / 100).toFixed(2)}%</td>
+                  <td>
+                    <strong style={{ fontSize: "1rem", color: "#111" }}>
+                      {loan.principal_amount.toFixed(2)}
+                    </strong>{" "}
+                    <span style={{ fontSize: "0.75rem", opacity: 0.6, color: "#444" }}>XLM</span>
+                  </td>
+                  <td style={{ fontWeight: 600, color: "#111" }}>
+                    {(loan.apr_bps / 100).toFixed(2)}%
+                  </td>
                   <td style={{ color: "#444" }}>{loan.duration_days} days</td>
                   <td style={{ color: "#22cf9d", fontWeight: 700 }}>
                     +{interestXlm} <span style={{ fontSize: "0.7rem", opacity: 0.8 }}>XLM</span>
@@ -125,7 +134,7 @@ export function LoanMarketplace({ loans, lenderWallet: _lenderWallet }: LoanMark
                         style={{ fontSize: "0.75rem", color: "#ff9966", opacity: 0.9, fontWeight: 600 }}
                         title="Borrower has not connected a Stellar wallet yet"
                       >
-                        ⚠ No wallet
+                        No wallet
                       </span>
                     ) : (
                       <button
@@ -137,19 +146,18 @@ export function LoanMarketplace({ loans, lenderWallet: _lenderWallet }: LoanMark
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {isExpanded ? "Close" : "Fund →"}
+                        {isExpanded ? "Close" : "Fund ->"}
                       </button>
                     )}
                   </td>
                 </tr>
 
-                {/* Inline funding form row */}
                 {isExpanded && (
                   <tr>
-                    <td 
-                      colSpan={8} 
-                      style={{ 
-                        padding: "1.5rem 1rem", 
+                    <td
+                      colSpan={8}
+                      style={{
+                        padding: "1.5rem 1rem",
                         background: "#fafafa",
                         borderBottom: "1px solid rgba(126, 47, 208, 0.15)",
                         borderTop: "1px solid rgba(126, 47, 208, 0.1)",
@@ -158,12 +166,12 @@ export function LoanMarketplace({ loans, lenderWallet: _lenderWallet }: LoanMark
                       <div style={{ animation: "fadeInUp 0.3s ease-out" }}>
                         <DirectFundForm
                           loan={{
-                            id:               loan.id,
+                            id: loan.id,
                             principal_amount: loan.principal_amount,
-                            apr_bps:          loan.apr_bps,
-                            duration_days:    loan.duration_days,
-                            trust_score:      loan.trust_score,
-                            borrower_wallet:  loan.borrower_wallet,
+                            apr_bps: loan.apr_bps,
+                            duration_days: loan.duration_days,
+                            trust_score: loan.trust_score,
+                            borrower_wallet: loan.borrower_wallet,
                           }}
                           onClose={() => setExpandedId(null)}
                         />
