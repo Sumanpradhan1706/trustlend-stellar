@@ -4,6 +4,7 @@ import { getBorrowerDashboardMetrics, presentBorrowerMetrics } from "@/lib/dashb
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { buildStellarTxVerificationUrl, isLikelyTxHash } from "@/lib/stellar/explorer";
 import { borrowerNavLinks } from "@/lib/dashboard/borrower-links";
+import { ExportCsvButton } from "@/components/dashboard/ExportCsvButton";
 
 export default async function BorrowerHistoryPage() {
   const { user } = await requireAuthenticatedUser("borrower");
@@ -168,6 +169,24 @@ export default async function BorrowerHistoryPage() {
   const totalFunded  = transactions.filter((t) => t.type === "funding_received").reduce((s, t) => s + t.amount, 0);
   const totalRepaid  = transactions.filter((t) => t.type === "repayment_made").reduce((s, t) => s + t.amount, 0);
 
+  const exportData = transactions.map(tx => {
+    const isRequested = tx.type === "loan_requested";
+    const isFunding = tx.type === "funding_received";
+
+    const label = isRequested ? "Loan Request Created" : isFunding ? "Funding Received" : "Repayment Made";
+    
+    return {
+      "Transaction ID": tx.id,
+      "Type": label,
+      "Loan ID": tx.loanId,
+      "Amount": tx.amount.toFixed(2),
+      "Currency": "XLM",
+      "Date": tx.date ? new Date(tx.date).toLocaleString() : "",
+      "Loan Status": tx.loanStatus || "—",
+      "Stellar Tx Hash": tx.txHash
+    };
+  });
+
   return (
     <WorkspaceFrame
       roleLabel="Borrower Dashboard"
@@ -203,7 +222,10 @@ export default async function BorrowerHistoryPage() {
 
         {/* Unified transaction feed */}
         <article className="workspace-card workspace-card--full">
-          <h2 className="workspace-card-title" style={{ marginBottom: "1.25rem" }}>All Transactions</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+            <h2 className="workspace-card-title" style={{ margin: 0 }}>All Transactions</h2>
+            <ExportCsvButton data={exportData} filename={`borrower_transactions_${new Date().toISOString().slice(0,10)}.csv`} />
+          </div>
 
           {transactions.length === 0 ? (
             <div style={{ textAlign: "center", padding: "2.5rem", opacity: 0.5 }}>

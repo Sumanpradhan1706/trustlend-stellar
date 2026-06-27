@@ -4,6 +4,7 @@ import { getLenderDashboardMetrics, presentLenderMetrics } from "@/lib/dashboard
 import { getServerSupabaseClient, getServiceRoleClient } from "@/lib/supabase/server";
 import { lenderNavLinks } from "@/lib/dashboard/lender-links";
 import { buildStellarTxVerificationUrl, isLikelyTxHash } from "@/lib/stellar/explorer";
+import { ExportCsvButton } from "@/components/dashboard/ExportCsvButton";
 
 export default async function LenderHistoryPage() {
   const { user }  = await requireAuthenticatedUser("lender");
@@ -53,6 +54,34 @@ export default async function LenderHistoryPage() {
     new Date(String(b.created_at)).getTime() - new Date(String(a.created_at)).getTime()
   );
 
+  const exportData = transactions.map(tx => {
+    let txHash = "";
+    let subLabel = "";
+    try {
+      const meta = JSON.parse(String(tx.metadata ?? "{}"));
+      txHash = String(meta.txHash ?? "");
+      if (meta.loanId) subLabel = `Loan #${String(meta.loanId).slice(0,8)}`;
+      else if (tx.ref_id) subLabel = `Ref #${String(tx.ref_id).slice(0,8)}`;
+    } catch { /* ok */ }
+
+    let label = "Transaction";
+    if (tx.ref_type === "loan_fund") label = "P2P Loan Deployed";
+    else if (tx.ref_type === "loan_repay") label = "Repayment Received";
+    else if (tx.category === "pool_deposit") label = "Pool Deposit";
+    else if (tx.category === "pool_withdraw") label = "Pool Withdrawal";
+
+    return {
+      "Transaction ID": tx.id,
+      "Type": label,
+      "Reference": subLabel,
+      "Amount": Number(tx.amount).toFixed(2),
+      "Currency": tx.currency || "XLM",
+      "Date": tx.created_at ? new Date(String(tx.created_at)).toLocaleString() : "",
+      "Status": tx.status || "completed",
+      "Stellar Tx Hash": txHash
+    };
+  });
+
   return (
     <WorkspaceFrame
       roleLabel="Lender Dashboard"
@@ -68,7 +97,10 @@ export default async function LenderHistoryPage() {
 
         {/* Transaction stream */}
         <article className="workspace-card workspace-card--full">
-          <h2 className="workspace-card-title" style={{ marginBottom: "1.25rem" }}>All Transactions</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+            <h2 className="workspace-card-title" style={{ margin: 0 }}>All Transactions</h2>
+            <ExportCsvButton data={exportData} filename={`lender_transactions_${new Date().toISOString().slice(0,10)}.csv`} />
+          </div>
 
           {transactions.length === 0 ? (
             <div style={{ textAlign: "center", padding: "2.5rem", opacity: 0.5 }}>
