@@ -242,7 +242,7 @@ export default async function BorrowerDashboardPage() {
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid #eef0f8" }}>
-                    {["Loan ID", "Amount", "Status", "APR", "Due", "Stellar TX"].map((h) => (
+                    {["Loan ID", "Amount", "Status", "APR", "Due", "Stellar TX", "Receipt"].map((h) => (
                       <th key={h} style={{ textAlign: "left", padding: "0.6rem 0.75rem", fontSize: "0.72rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
                     ))}
                   </tr>
@@ -274,6 +274,31 @@ export default async function BorrowerDashboardPage() {
                             <span style={{ fontSize: "0.75rem", opacity: 0.4, whiteSpace: "nowrap" }}>
                               {status === "requested" || status === "approved" ? "⏳ Pending" : status === "funded" ? "✅ Recorded" : "—"}
                             </span>
+                          )}
+                        </td>
+                        <td style={{ padding: "0.75rem", whiteSpace: "nowrap" }}>
+                          {status === "repaid" ? (
+                            <a
+                              href={`/api/loans/${loanId}/receipt`}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "0.35rem",
+                                padding: "0.45rem 0.8rem",
+                                borderRadius: "0.45rem",
+                                background: "rgba(126,47,208,0.08)",
+                                color: "#7e2fd0",
+                                fontSize: "0.78rem",
+                                fontWeight: 700,
+                                textDecoration: "none",
+                              }}
+                            >
+                              Download PDF
+                            </a>
+                          ) : (
+                            <span style={{ fontSize: "0.75rem", opacity: 0.4 }}>-</span>
                           )}
                         </td>
                       </tr>
