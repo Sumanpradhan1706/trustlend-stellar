@@ -8,7 +8,7 @@ import {
 } from "@/lib/dashboard/metrics";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { lenderNavLinks } from "@/lib/dashboard/lender-links";
-import { formatCurrency, formatTokenBalance } from "@/lib/utils/formatting";
+import { formatTokenBalance } from "@/lib/utils/formatting";
 import {
   isLikelyTxHash,
   buildStellarTxVerificationUrl,

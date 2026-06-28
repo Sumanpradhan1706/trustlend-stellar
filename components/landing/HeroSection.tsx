@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useState } from "react";
 import type { HeroContent } from "@/types/landing";
 
 interface HeroSectionProps {
@@ -11,15 +11,15 @@ interface HeroSectionProps {
 }
 
 // Particle component for decorative effects
-const Particle = ({ x, y, delay }: { x: number; y: number; delay: number }) => {
+const Particle = ({ x, y, delay, width, height, duration }: { x: number; y: number; delay: number; width: number; height: number; duration: number }) => {
   return (
     <motion.div
       className="absolute rounded-full bg-gradient-to-br from-purple-500/30 to-teal-400/30"
       style={{
         left: `${x}%`,
         top: `${y}%`,
-        width: Math.random() * 20 + 8,
-        height: Math.random() * 20 + 8,
+        width,
+        height,
       }}
       initial={{ opacity: 0, scale: 0, y: 20 }}
       animate={{
@@ -28,7 +28,7 @@ const Particle = ({ x, y, delay }: { x: number; y: number; delay: number }) => {
         y: [0, -30, 0],
       }}
       transition={{
-        duration: Math.random() * 4 + 3,
+        duration,
         repeat: Infinity,
         delay,
         ease: "easeInOut",
@@ -38,14 +38,22 @@ const Particle = ({ x, y, delay }: { x: number; y: number; delay: number }) => {
 };
 
 export function HeroSection({ content, isAuthenticated = false }: HeroSectionProps) {
+  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; delay: number; width: number; height: number; duration: number }>>([]);
+
   // Generate particles once on mount
-  const particles = useMemo(() => {
-    return Array.from({ length: 20 }).map((_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      delay: Math.random() * 3,
-    }));
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setParticles(
+      Array.from({ length: 20 }).map((_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        delay: Math.random() * 3,
+        width: Math.random() * 20 + 8,
+        height: Math.random() * 20 + 8,
+        duration: Math.random() * 4 + 3,
+      }))
+    );
   }, []);
 
   return (
@@ -53,7 +61,7 @@ export function HeroSection({ content, isAuthenticated = false }: HeroSectionPro
       {/* Particle background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((p) => (
-          <Particle key={p.id} x={p.x} y={p.y} delay={p.delay} />
+          <Particle key={p.id} x={p.x} y={p.y} delay={p.delay} width={p.width} height={p.height} duration={p.duration} />
         ))}
       </div>
 

@@ -15,7 +15,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getBrowserSupabaseClient } from "@/lib/supabase/client";
-import { formatCurrency, formatTokenBalance } from "@/lib/utils/formatting";
+import { formatTokenBalance } from "@/lib/utils/formatting";
 import { PoolCardSkeleton } from "./PoolCardSkeleton";
 
 // ────────────────────────────────────────────────────────────────────────────

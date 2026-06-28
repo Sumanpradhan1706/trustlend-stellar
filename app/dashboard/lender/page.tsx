@@ -9,7 +9,7 @@ import {
   getServerSupabaseClient,
   getServiceRoleClient,
 } from "@/lib/supabase/server";
-import { formatCurrency, formatTokenBalance } from "@/lib/utils/formatting";
+import { formatTokenBalance } from "@/lib/utils/formatting";
 import { lenderNavLinks } from "@/lib/dashboard/lender-links";
 import Link from "next/link";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NotificationWidget } from "./NotificationWidget";
@@ -63,11 +63,13 @@ export function WorkspaceFrame({
 
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
   // Close sidebar on path change
-  useEffect(() => {
+  if (pathname !== prevPathname) {
     setIsSidebarOpen(false);
-  }, [pathname]);
+    setPrevPathname(pathname);
+  }
 
   const normalizedLinks = (() => {
     const seen = new Set<string>();
