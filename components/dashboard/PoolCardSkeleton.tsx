@@ -107,7 +107,7 @@ function StatCardSkeleton({ delay = 0 }: { delay?: number }) {
     >
       <ShimmerBar width="60%" height="0.65rem" />
       <ShimmerBar width="75%" height="1.4rem" />
-      <ShimmerBar width="45%" height="0.6" />
+      <ShimmerBar width="45%" height="0.6rem" />
     </motion.article>
   );
 }
