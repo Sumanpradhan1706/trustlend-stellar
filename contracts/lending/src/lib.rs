@@ -605,13 +605,14 @@ impl LendingContract {
 
         // Enforce cooldown
         let now = env.ledger().timestamp();
-        let last_switch: u64 = env
+        if let Some(last_switch) = env
             .storage()
             .persistent()
-            .get(&DataKey::RateSwitchCooldown(loan_id))
-            .unwrap_or(0);
-        if last_switch > 0 && (now - last_switch) < RATE_SWITCH_COOLDOWN_SECS {
-            panic!("Rate switch cooldown not elapsed (24h required)");
+            .get::<DataKey, u64>(&DataKey::RateSwitchCooldown(loan_id))
+        {
+            if now.saturating_sub(last_switch) < RATE_SWITCH_COOLDOWN_SECS {
+                panic!("Rate switch cooldown not elapsed (24h required)");
+            }
         }
 
         // Charge switch fee: 0.5% of remaining debt
